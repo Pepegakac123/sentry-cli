@@ -13,8 +13,28 @@ type MemoryUsage struct {
 	AvailableMemory int64
 	MemoryUsage     float64
 }
+type MemoryMonitor struct {
+	Stats *MemoryUsage
+}
 
-func GetRamUsage() (*MemoryUsage, error) {
+func NewMemoryUsageMonitor() (*MemoryMonitor, error) {
+	stats, err := getRamUsage()
+	if err != nil {
+		return nil, err
+	}
+	return &MemoryMonitor{Stats: stats}, nil
+}
+
+func (m *MemoryMonitor) Update() (*MemoryUsage, error) {
+	stats, err := getRamUsage()
+	if err != nil {
+		return nil, err
+	}
+	m.Stats = stats
+	return stats, nil
+}
+
+func getRamUsage() (*MemoryUsage, error) {
 	f, err := os.Open("/proc/meminfo")
 	if err != nil {
 		return nil, err
@@ -49,12 +69,12 @@ func GetRamUsage() (*MemoryUsage, error) {
 		return nil, fmt.Errorf("failed to get memory usage")
 	}
 	memUsagePrcent := float64(totalMem-availableMem) / float64(totalMem) * 100
-
-	return &MemoryUsage{
+	stats := &MemoryUsage{
 		TotalMemory:     totalMem,
 		AvailableMemory: availableMem,
 		MemoryUsage:     memUsagePrcent,
-	}, nil
+	}
+	return stats, nil
 
 }
 func parseValue(line []byte) (int64, error) {

@@ -16,18 +16,21 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	ramMon, err := monitor.NewMemoryUsageMonitor()
+	if err != nil {
+		log.Fatal(err)
+	}
 	ticker := time.Tick(*interval)
 	for range ticker {
-		ramUsage, err := monitor.GetRamUsage()
+		stats, err := ramMon.Update()
 		if err != nil {
-			fmt.Printf("Failed to get memory usage: %v\n", err)
-			return
+			log.Printf("Failed to get memory usage: %v\n", err)
+
 		}
-		fmt.Printf("Total Memory: %d\t Available Memory: %d\t Memory Usage: %.2f%%\n", ramUsage.TotalMemory, ramUsage.AvailableMemory, ramUsage.MemoryUsage)
+		fmt.Printf("Total Memory: %d\t Available Memory: %d\t Memory Usage: %.2f%%\n", stats.TotalMemory, stats.AvailableMemory, stats.MemoryUsage)
 		cpuUsage, err := cpuMon.Update()
 		if err != nil {
 			log.Printf("Error reading CPU: %v", err)
-			continue
 		}
 		fmt.Printf("CPU Usage: %.2f%%\n", cpuUsage)
 	}
