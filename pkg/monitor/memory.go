@@ -50,12 +50,14 @@ func getRamUsage() (*MemoryUsage, error) {
 
 		if bytes.HasPrefix(line, prefixMemTotal) {
 			totalMem, err = parseValue(line)
+			totalMem = totalMem * 1024
 			if err != nil {
 				return nil, err
 			}
 		}
 		if bytes.HasPrefix(line, prefixMemAvailable) {
 			availableMem, err = parseValue(line)
+			availableMem = availableMem * 1024
 			if err != nil {
 				return nil, err
 			}
